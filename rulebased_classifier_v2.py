@@ -1,11 +1,13 @@
+import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from utils import *
 
 ## TODO : implement a function for intepretability of the classifier
 
-class RuleBasedClassifier:
+class RuleBasedClassifierV2:
     def __init__(self, size, shp, texture, homogeneity, decision_option="majority"):
         
         self.mapping = None
@@ -61,11 +63,12 @@ class RuleBasedClassifier:
 
     def hard_predict(self, X):
 
-        X0, _, _= split_dataframe(X, lb=False)
+        X0, X1, X2= split_dataframe(X, lb=False)
         
         val = X0
 
         mask = (val < self.threshold).astype(int)
+        mask_hom = (X2 < self.threshold).astype(int)
 
         #### Rule-based classification
 
@@ -108,7 +111,7 @@ class RuleBasedClassifier:
         if len(self.homogeneity) == 0:
             cond4 = np.zeros(mask.shape[0], dtype=bool)
         else:
-            cond4 = (mask[:, [self.mapping[x] for x in self.homogeneity]] == 0).sum(axis=1) >= rhs[3]
+            cond4 = (mask_hom[:, [self.mapping[x] for x in self.homogeneity]] == 0).sum(axis=1) >= rhs[3]
 
 
         predictions = np.where(cond1 | cond2 | cond3 | cond4, 1, 0)
