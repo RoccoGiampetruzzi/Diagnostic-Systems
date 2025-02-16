@@ -1,8 +1,5 @@
-import pickle
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
 from utils import *
 
 ## TODO : implement a function for intepretability of the classifier
