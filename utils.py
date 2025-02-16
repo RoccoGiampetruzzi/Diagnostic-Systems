@@ -51,7 +51,6 @@ def custom_gridsearch(model_class, X_train, y_train, X_val, y_val, **parameters)
     best_f1 = 0
     best_precision = 0
     best_recall = 0
-    best_cm = None
     best_model = None
     optimal_combination = None
 

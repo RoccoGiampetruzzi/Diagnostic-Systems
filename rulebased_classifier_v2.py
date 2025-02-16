@@ -53,8 +53,6 @@ class RuleBasedClassifierV2:
         self.X1 = X1
         self.X2 = X2
 
-        #ben = np.where(self.y == 0)
-
         self.mean_0 = np.mean(self.X0, axis=0)
         self.mean_1 = np.mean(self.X1, axis=0)
 
@@ -136,4 +134,53 @@ class RuleBasedClassifierV2:
         F1_score = 2*(precision*recall)/(precision + recall)
 
         return accuracy, precision, recall, F1_score, confusion_matrix
+    
+
+    def classifier_rules(self):
+        """Print a human-readable version of the rules."""
+
+        if self.threshold is None:
+            print("No rules to display; the model is not trained yet.")
+            return
+        
+        print("4 Category rules (in order):")
+
+        if len(self.size) == 0:
+            print("\nNo conditions for size")
+        else:
+            print(f"\nSize:\n ")
+            for i in self.size:
+                print(f"\tmean_{i} > {self.threshold[self.mapping[i]]}")
+
+        if len(self.shp) == 0:
+            print("\nNo conditions for shape")
+        else:
+            print(f"\nShape:\n ")
+            for i in self.shp:
+                print(f"\tmean_{i} > {self.threshold[self.mapping[i]]}")
+
+        if len(self.texture) == 0:
+            print("\nNo conditions for texture")
+        else:
+            print(f"\nTexture:\n ")
+            for i in self.texture:
+                print(f"\n\tmean_{i} > {self.threshold[self.mapping[i]]}")
+
+        if len(self.homogeneity) == 0:
+            print("\nNo conditions for homogeneity")
+        else:
+            print(f"\nHomogeneity:\n ")
+            for i in self.homogeneity:
+                print(f"\tworst_{i} > {self.threshold[self.mapping[i]]}")
+
+        if self.decision_option == "majority":
+            print("\nDecision option: majority. At least half of the conditions must be satisfied for a category rule to hold.")
+        elif self.decision_option == "single":
+            print("\nDecision option: single. At least one of the conditions must be satisfied for a category rule to hold.")
+        elif self.decision_option == "all":
+            print("\nDecision option: all. All conditions must be satisfied for a category rule to hold.")
+
+        print(f"If at least one of the category rules is satisfied, the prediction is 1; otherwise, the prediction is 0.")
+
+
         
