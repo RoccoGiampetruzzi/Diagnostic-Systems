@@ -32,17 +32,19 @@ def columns_mapping(df):
     return index_cols
 
 
-
 def evaluate_model(y_pred, y_test, model_name):
 
     accuracy = accuracy_score(y_test, y_pred)
     print(f"\nAccuracy of {model_name}: {accuracy}")
 
+    conf_matrix = confusion_matrix(y_test, y_pred)
     print(f"\nConfusion Matrix for {model_name}:")
-    print(confusion_matrix(y_test, y_pred))
+    print(conf_matrix)
 
     print(f"\nClassification Report for {model_name}:")
     print(classification_report(y_test, y_pred))
+
+    return accuracy, conf_matrix
 
 
 def custom_gridsearch(model_class, X_train, y_train, X_val, y_val, **parameters):
