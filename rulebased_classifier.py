@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 from utils import *
 
-## TODO : implement a function for intepretability of the classifier
-
 class RuleBasedClassifier:
     def __init__(self, size, shp, texture, homogeneity, decision_option="majority"):
         
