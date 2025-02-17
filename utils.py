@@ -32,17 +32,19 @@ def columns_mapping(df):
     return index_cols
 
 
-def evaluate_model(y_pred, y_test, model_name):
+def evaluate_model(y_pred, y_test, model_name, print_results=True):
 
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nAccuracy of {model_name}: {accuracy}")
+    conf_matrix = confusion_matrix(y_test, y_pred)  # Row --> True labels, Columns --> Predicted Labels 
 
-    conf_matrix = confusion_matrix(y_test, y_pred)
-    print(f"\nConfusion Matrix for {model_name}:")
-    print(conf_matrix)
+    if print_results:
+        print(f"\nAccuracy of {model_name}: {accuracy}")
 
-    print(f"\nClassification Report for {model_name}:")
-    print(classification_report(y_test, y_pred))
+        print(f"\nConfusion Matrix for {model_name}:")
+        print(conf_matrix)
+
+        print(f"\nClassification Report for {model_name}:")
+        print(classification_report(y_test, y_pred))
 
     return accuracy, conf_matrix
 
@@ -70,7 +72,7 @@ def custom_gridsearch(model_class, X_train, y_train, X_val, y_val, **parameters)
         C = model_class(*params[param_names[0]], **{k: v for k, v in params.items() if k != param_names[0]})
         C.fit(X_train, y_train)
 
-        accuracy, precision, recall, f1, _ = C.score(X_val, y_val)
+        accuracy, _, precision, recall, f1 = C.score(X_val, y_val, verbose=0)
 
         if accuracy > best_accuracy:
             best_accuracy = accuracy

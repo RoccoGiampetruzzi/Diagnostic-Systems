@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from utils import *
 
 ## TODO : implement a function for intepretability of the classifier
@@ -51,8 +50,6 @@ class RuleBasedClassifier:
         self.X1 = X1
         self.X2 = X2
 
-        #ben = np.where(self.y == 0)
-
         self.mean_0 = np.mean(self.X0, axis=0)
         self.mean_1 = np.mean(self.X1, axis=0)
 
@@ -61,11 +58,12 @@ class RuleBasedClassifier:
 
     def hard_predict(self, X):
 
-        X0, _, _= split_dataframe(X, lb=False)
+        X0, X1, X2= split_dataframe(X, lb=False)
         
         val = X0
 
         mask = (val < self.threshold).astype(int)
+        mask_hom = (X2 < self.threshold).astype(int)
 
         #### Rule-based classification
 
@@ -108,7 +106,7 @@ class RuleBasedClassifier:
         if len(self.homogeneity) == 0:
             cond4 = np.zeros(mask.shape[0], dtype=bool)
         else:
-            cond4 = (mask[:, [self.mapping[x] for x in self.homogeneity]] == 0).sum(axis=1) >= rhs[3]
+            cond4 = (mask_hom[:, [self.mapping[x] for x in self.homogeneity]] == 0).sum(axis=1) >= rhs[3]
 
 
         predictions = np.where(cond1 | cond2 | cond3 | cond4, 1, 0)
@@ -116,21 +114,63 @@ class RuleBasedClassifier:
         return predictions
     
 
-    def score(self, X, y):
+    def score(self, X, y, verbose=0):
 
         y_pred = self.hard_predict(X)
-        n_labels = int(np.max(y))+1
-        confusion_matrix = np.zeros((n_labels, n_labels), dtype=int)
         
-        # Counting entries of Confusion Matrix
-        for true_label, pred_label in zip(y, y_pred):
-            confusion_matrix[int(true_label), int(pred_label)] += 1 # Row --> True labels, Columns --> Predicted Labels
-            
-        # Computing accuracy
-        accuracy = np.trace(confusion_matrix) / np.sum(confusion_matrix)
+        accuracy, confusion_matrix = evaluate_model(y_pred, y, "RuleBasedClassifier", print_results=verbose)
         precision = confusion_matrix[1,1]/(confusion_matrix[1,1] + confusion_matrix[0, 1])
         recall = confusion_matrix[1, 1]/(confusion_matrix[1, 1] + confusion_matrix[1, 0])
         F1_score = 2*(precision*recall)/(precision + recall)
 
-        return accuracy, precision, recall, F1_score, confusion_matrix
+        return accuracy, confusion_matrix, precision, recall, F1_score
+    
+
+    def classifier_rules(self):
+        """Print a human-readable version of the rules."""
+
+        if self.threshold is None:
+            print("No rules to display; the model is not trained yet.")
+            return
+        
+        print("4 Category rules (in order):")
+
+        if len(self.size) == 0:
+            print("\nNo conditions for size")
+        else:
+            print(f"\nSize:\n ")
+            for i in self.size:
+                print(f"\tmean_{i} > {self.threshold[self.mapping[i]]}")
+
+        if len(self.shp) == 0:
+            print("\nNo conditions for shape")
+        else:
+            print(f"\nShape:\n ")
+            for i in self.shp:
+                print(f"\tmean_{i} > {self.threshold[self.mapping[i]]}")
+
+        if len(self.texture) == 0:
+            print("\nNo conditions for texture")
+        else:
+            print(f"\nTexture:\n ")
+            for i in self.texture:
+                print(f"\tmean_{i} > {self.threshold[self.mapping[i]]}")
+
+        if len(self.homogeneity) == 0:
+            print("\nNo conditions for homogeneity")
+        else:
+            print(f"\nHomogeneity:\n ")
+            for i in self.homogeneity:
+                print(f"\tworst_{i} > {self.threshold[self.mapping[i]]}")
+
+        if self.decision_option == "majority":
+            print("\nDecision option: majority. At least half of the conditions must be satisfied for a category rule to hold.")
+        elif self.decision_option == "single":
+            print("\nDecision option: single. At least one of the conditions must be satisfied for a category rule to hold.")
+        elif self.decision_option == "all":
+            print("\nDecision option: all. All conditions must be satisfied for a category rule to hold.")
+
+        print(f"If at least one of the category rules is satisfied, the prediction is 1; otherwise, the prediction is 0.")
+
+
         
