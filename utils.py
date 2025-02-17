@@ -93,3 +93,42 @@ def custom_gridsearch(model_class, X_train, y_train, X_val, y_val, **parameters)
 
     return best_model, optimal_combination
 
+
+def compare_IREP_RIPPER(irep, ripper, X_train, y_train, X_test, y_test, n_iterations):
+    
+    accuracy_irep = []
+    accuracy_ripper = []
+    num_conditions_irep = []
+    num_conditions_ripper = []
+    
+    for i in range(n_iterations):
+
+        irep.fit(X_train, y_train)
+        y_pred1 = irep.predict(X_test)
+        accuracy_irep.append(np.mean(y_pred1 == y_test))
+        num_conditions_irep.append(sum([len(rule) for rule in irep.ruleset_.rules])) 
+
+        ripper.fit(X_train, y_train)
+        y_pred2 = ripper.predict(X_test)
+        accuracy_ripper.append(np.mean(y_pred2 == y_test))
+        num_conditions_ripper.append(sum([len(rule) for rule in ripper.ruleset_.rules])) 
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+
+    ax1.plot(range(1, n_iterations + 1), accuracy_irep, label="IREP", marker='o')
+    ax1.plot(range(1, n_iterations + 1), accuracy_ripper, label="RIPPER", marker='o')
+    ax1.set_xlabel('Iteration')
+    ax1.set_ylabel('Accuracy')
+    ax1.set_title('Accuracy over Iterations')
+    ax1.legend()
+
+    ax2.plot(range(1, n_iterations + 1), num_conditions_irep, label="IREP", marker='o')
+    ax2.plot(range(1, n_iterations + 1), num_conditions_ripper, label="RIPPER", marker='o')
+    ax2.set_xlabel('Iteration')
+    ax2.set_ylabel('Number of Conditions in Clauses')
+    ax2.set_title('Number of Conditions in Clauses over Iterations')
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.show()
+
